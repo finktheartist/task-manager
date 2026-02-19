@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Flask Task Manager</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="topbar__inner">
+      <div>
+        <h1 class="title">Tasks</h1>
+        <p class="subtitle">Sorted by priority → due → id</p>
+      </div>
+
+      <button class="btn btn--primary" id="openModalBtn" type="button">
+        + New Task
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="panel">
+      <div class="panel__head">
+        <h2 class="panel__title">Your List</h2>
+        <span class="badge">{{ tasks|length }} total</span>
+      </div>
+
+      <ul class="tasklist" id="taskList">
+        {% for t in tasks %}
+          <li class="taskcard
+                     {% if t.completed %}is-completed{% endif %}
+                     {% if is_overdue(t) %}is-overdue{% endif %}"
+              data-task-id="{{ t.id }}">
+
+            <div class="taskcard__left">
+              <!-- COMPLETE / UNCOMPLETE -->
+              <form
+                action="{{ url_for('complete_task', task_id=t.id) if not t.completed else url_for('uncomplete_task', task_id=t.id) }}"
+                method="post"
+              >
+                <button class="check" type="submit" aria-label="Toggle complete">
+                  <span class="check__box" aria-hidden="true"></span>
+                </button>
+              </form>
+
+              <div class="taskmeta">
+                <div class="tasktitle">{{ t.title }}</div>
+
+                <div class="taskchips">
+                  <span class="chip chip--prio chip--{{ t.priority }}">
+                    {{ t.priority|upper }}
+                  </span>
+
+                  {% if t.due_date %}
+                    <span class="chip chip--due">
+                      Due {{ t.due_date }}
+                    </span>
+                  {% endif %}
+                </div>
+
+                <!-- UPDATE (priority + due date) -->
+                <form class="inlineform" action="{{ url_for('update_task', task_id=t.id) }}" method="post">
+                  <select class="input input--sm" name="priority">
+                    <option value="low"  {% if t.priority == "low" %}selected{% endif %}>LOW</option>
+                    <option value="med"  {% if t.priority == "med" %}selected{% endif %}>MED</option>
+                    <option value="high" {% if t.priority == "high" %}selected{% endif %}>HIGH</option>
+                  </select>
+
+                  <input class="input input--sm" type="date" name="due_date" value="{{ t.due_date or '' }}"/>
+
+                  <button class="btn btn--ghost" type="submit">Save</button>
+                </form>
+              </div>
+            </div>
+
+            <div class="taskcard__right">
+              <!-- DELETE -->
+              <form action="{{ url_for('delete_task', task_id=t.id) }}" method="post">
+                <button class="btn btn--ghost btn--danger" type="submit">Delete</button>
+              </form>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  </main>
+
+  <!-- MODAL -->
+  <div class="modal" id="taskModal" aria-hidden="true">
+    <div class="modal__overlay" data-close="true"></div>
+
+    <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal__head">
+        <h3 class="modal__title" id="modalTitle">Create Task</h3>
+        <button class="iconbtn" type="button" id="closeModalBtn" aria-label="Close">✕</button>
+      </div>
+
+      <!-- ADD TASK -->
+      <form class="modal__body" action="{{ url_for('add_task') }}" method="post">
+        <label class="field">
+          <span class="field__label">Task title</span>
+          <input class="input" name="title" type="text" placeholder="e.g. Finish the UI polish" required />
+        </label>
+
+        <div class="modal__foot">
+          <button class="btn btn--ghost" type="button" data-close="true">Cancel</button>
+          <button class="btn btn--primary" type="submit">Add Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const modal = document.getElementById("taskModal");
+    const openBtn = document.getElementById("openModalBtn");
+    const closeBtn = document.getElementById("closeModalBtn");
+
+    function openModal() {
+      modal.classList.add("is-open");
+      modal.setAttribute("aria-hidden", "false");
+      const input = modal.querySelector("input[name='title']");
+      if (input) setTimeout(() => input.focus(), 50);
+    }
+
+    function closeModal() {
+      modal.classList.remove("is-open");
+      modal.setAttribute("aria-hidden", "true");
+    }
+
+    openBtn?.addEventListener("click", openModal);
+    closeBtn?.addEventListener("click", closeModal);
+
+    modal?.addEventListener("click", (e) => {
+      if (e.target?.dataset?.close === "true") closeModal();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+    });
+  </script>
+</body>
+</html>

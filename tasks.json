@@ -1,0 +1,30 @@
+[
+    {
+        "id": 1,
+        "title": "Buy Milk",
+        "completed": false,
+        "priority": "high",
+        "due_date": "2026-02-04"
+    },
+    {
+        "id": 2,
+        "title": "Make Web App",
+        "completed": false,
+        "priority": "med",
+        "due_date": null
+    },
+    {
+        "id": 3,
+        "title": "fdafed",
+        "completed": false,
+        "priority": "med",
+        "due_date": null
+    },
+    {
+        "id": 4,
+        "title": "ytyrtryryrty",
+        "completed": true,
+        "priority": "med",
+        "due_date": null
+    }
+]
